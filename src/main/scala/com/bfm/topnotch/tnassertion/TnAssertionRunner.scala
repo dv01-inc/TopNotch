@@ -127,7 +127,10 @@ class TnAssertionRunner(writer: TnWriter) extends StrictLogging {
           else {
             newDF.selectExpr(("*") +: assertion.userDefinedFeatures.get.map(nameExprPairToSelectExpr).toSeq: _*)
           }
-        when(expr(assertion.query), null).otherwise(assertion.description)
+        // #checkAssertion uses not(query) to filter bad rows. This skips rows when input is null
+        // change this line to maintain the same behavior via coalesce (or expr(q).isNull is clearer
+        // but need to test perf of this (Spark should be smart about avoiding double evaluation)
+        when(coalesce(expr(assertion.query), lit(true)), null).otherwise(assertion.description)
       }
     }
     newDF
