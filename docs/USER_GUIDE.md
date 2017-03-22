@@ -140,7 +140,10 @@ Specify each input data set using an object. This can either be a data set from 
       * example value - true
     * tableName - Mount the output of this command as a table for access through SparkSQL. This can only be set if outputPath is also set.
       * type - string
-      * example value - "tableToMount" (NOTE: the table will be mounted in the default )
+      * example value - "tableToMount"
+    * dbName - Database into which the table should be mounted. This can only be set if outputPath and tableName are also both set.
+      * type - string
+      * example value - "databaseToUse"
   * Example of How to Specify an Assertion in a Plan
   ```javascript
   {
@@ -193,7 +196,10 @@ Specify each input data set using an object. This can either be a data set from 
       * example value - true
     * tableName - Mount the output of this command as a table for access through SparkSQL. This can only be set if outputPath is also set.
       * type - string
-      * example value - "tableToMount" (NOTE: the table will be mounted in the default )
+      * example value - "tableToMount"
+    * dbName - Database into which the table should be mounted. This can only be set if outputPath and tableName are also both set.
+      * type - string
+      * example value - "databaseToUse"
     
   * Example of How to Specify a Diff in a Plan
   ```javascript
@@ -240,7 +246,10 @@ Specify each input data set using an object. This can either be a data set from 
       * example value - true
     * tableName - Mount the output of this command as a table for access through SparkSQL. This can only be set if outputPath is also set.
       * type - string
-      * example value - "tableToMount" (NOTE: the table will be mounted in the default )
+      * example value - "tableToMount"
+    * dbName - Database into which the table should be mounted. This can only be set if outputPath and tableName are also both set.
+      * type - string
+      * example value - "databaseToUse"
   * Example of How to Specify an Assertion in a Plan
   ```javascript
   {
