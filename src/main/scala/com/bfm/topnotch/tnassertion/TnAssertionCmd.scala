@@ -14,7 +14,8 @@ case class TnAssertionCmd (
                             outputKey: String,
                             cache: Option[Boolean] = None,
                             outputPath: Option[String] = None,
-                            tableName: Option[String] = None
+                            tableName: Option[String] = None,
+                            dbName: Option[String] = None
                           ) extends TnCmd
 
 /**
