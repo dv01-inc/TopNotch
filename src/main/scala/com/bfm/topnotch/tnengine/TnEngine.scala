@@ -197,17 +197,40 @@ class TnEngine(spark: SparkSession) extends StrictLogging {
     def storeOutputDF(output: DataFrame, cmd: TnCmd): Unit = {
       logger.info(s"Storing ${cmd.outputKey} in lookup table.")
       dataframeLookupTable.put(cmd.outputKey, if (cmd.cache.getOrElse(false)) output.cache() else output)
-      if (cmd.outputPath.isDefined) {
+      cmd.outputPath.map( outputPath => {
         // ok to just get the dataframe and trust that it is there because I just put it in the map
-        logger.info(s"Attempting to write ${cmd.outputKey} to disk in location ${cmd.outputPath.get}.")
-        dataframeLookupTable.get(cmd.outputKey).get.write.mode(SaveMode.Overwrite).format("parquet").save(cmd.outputPath.get)
-        logger.info(s"Successfully wrote ${cmd.outputKey} to disk in location ${cmd.outputPath.get}.")
-        if (cmd.tableName.isDefined) {
-          logger.info(s"Attempting to mount ${cmd.outputKey} as a table with name ${cmd.tableName.get}.")
-          spark.catalog.createExternalTable(cmd.tableName.get, cmd.outputPath.get, source = "parquet")
-          logger.info(s"Successfully mounted ${cmd.outputKey} as a table with name ${cmd.tableName.get}.")
+        logger.info(s"Attempting to write ${cmd.outputKey} to disk in location ${outputPath}.")
+        dataframeLookupTable.get(cmd.outputKey).get.write.mode(SaveMode.Overwrite).format("parquet").save(outputPath)
+        logger.info(s"Successfully wrote ${cmd.outputKey} to disk in location ${outputPath}.")
+        cmd.tableName.map(mountHDFSTable(_, outputPath, cmd.outputKey, cmd.dbName))
+      })
+    }
 
-        }
+    /**
+     *  Mount an abitrary parquet as a Table in an HDFS database.
+     *
+     *  @param tableName The name of the table to load
+     *  @param parquetPath The parquet from which to load the table
+     *  @param outputKey A name by which to refer to this data in the logs.
+     *  @param dbName The name of the database to load it into.  Otherwise, it will be loaded into the default database
+     */
+    def mountHDFSTable(tableName: String, parquetPath: String, outputKey: String, dbName: Option[String]) = {
+      val oldDBName = spark.catalog.currentDatabase
+      try {
+        dbName.map(name => {
+          // TODO: in spark 2.1 this is `if (!spark.catalog.databaseExists(name))`
+          if (spark.catalog.listDatabases.filter(_.name == name).count == 0) {
+            logger.info(s"Attempting to create database $name.")
+            spark.sql(s"create database $name")
+            logger.info(s"Successfully created database $name.")
+          }
+          spark.catalog.setCurrentDatabase(name)
+        })
+        logger.info(s"Attempting to mount $outputKey as a table with name $tableName.")
+        spark.catalog.createExternalTable(tableName, parquetPath, source = "parquet")
+        logger.info(s"Successfully mounted $outputKey as a table with name $tableName.")
+      } finally {
+        spark.catalog.setCurrentDatabase(oldDBName)
       }
     }
 
