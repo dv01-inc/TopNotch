@@ -202,37 +202,38 @@ class TnEngine(spark: SparkSession) extends StrictLogging {
         logger.info(s"Attempting to write ${cmd.outputKey} to disk in location ${outputPath}.")
         dataframeLookupTable.get(cmd.outputKey).get.write.mode(SaveMode.Overwrite).format("parquet").save(outputPath)
         logger.info(s"Successfully wrote ${cmd.outputKey} to disk in location ${outputPath}.")
-        cmd.tableName.map(mountHDFSTable(_, outputPath, cmd.outputKey, cmd.dbName))
+        cmd.tableName.foreach(mountHiveTable(_, outputPath, cmd.outputKey, cmd.dbName))
       })
     }
 
     /**
-     *  Mount an abitrary parquet as a Table in an HDFS database.
+     *  Mount an abitrary parquet as a Table in a Hive database.
      *
      *  @param tableName The name of the table to load
      *  @param parquetPath The parquet from which to load the table
      *  @param outputKey A name by which to refer to this data in the logs.
      *  @param dbName The name of the database to load it into.  Otherwise, it will be loaded into the default database
      */
-    def mountHDFSTable(tableName: String, parquetPath: String, outputKey: String, dbName: Option[String]) = {
-      val oldDBName = spark.catalog.currentDatabase
-      try {
-        dbName.map(name => {
-          // TODO: in spark 2.1 this is `if (!spark.catalog.databaseExists(name))`
-          if (spark.catalog.listDatabases.filter(_.name == name).count == 0) {
-            logger.info(s"Attempting to create database $name.")
-            spark.sql(s"create database $name")
-            logger.info(s"Successfully created database $name.")
-          }
-          spark.catalog.setCurrentDatabase(name)
-        })
-        logger.info(s"Attempting to mount $outputKey as a table with name $tableName.")
-        spark.catalog.createExternalTable(tableName, parquetPath, source = "parquet")
-        logger.info(s"Successfully mounted $outputKey as a table with name $tableName.")
-      } finally {
-        spark.catalog.setCurrentDatabase(oldDBName)
-      }
+    def mountHiveTable(tableName: String, parquetPath: String, outputKey: String, dbName: Option[String]): Unit = {
+      dbName.foreach(ensureDatabase)
+      val qualifiedTableName = dbName.map(name => s"$name.$tableName").getOrElse(tableName)
+      logger.info(s"Attempting to mount $outputKey as a table with name $qualifiedTableName.")
+      spark.catalog.createExternalTable(qualifiedTableName, parquetPath, source = "parquet")
+      logger.info(s"Successfully mounted $outputKey as a table with name $qualifiedTableName.")
     }
+
+    /**
+     *  Ensure that a spacific database exists.
+     *
+     *  @param dbName the name o fhte database to ensure exists.
+     */
+    def ensureDatabase(dbName: String): Unit =
+      // TODO: in spark 2.1 this is `if (!spark.catalog.databaseExists(name))`
+      if (spark.catalog.listDatabases.filter(_.name == dbName).count == 0) {
+        logger.info(s"Attempting to create database $dbName.")
+        spark.sql(s"create database $dbName")
+        logger.info(s"Successfully created database $dbName.")
+      }
 
     /**
       * Execute an individual command by using a match to figure out which command and store the output DataFrame.
@@ -261,6 +262,7 @@ class TnEngine(spark: SparkSession) extends StrictLogging {
           TnEngine.NO_FAILURES
         }
       }
+
     }
 
     cmds.foldLeft(0)((last: Int, cmd: TnCmd) => last + runCommand(cmd))
