@@ -218,6 +218,7 @@ class TnEngine(spark: SparkSession) extends StrictLogging {
       dbName.foreach(ensureDatabase)
       val qualifiedTableName = dbName.map(name => s"$name.$tableName").getOrElse(tableName)
       logger.info(s"Attempting to mount $outputKey as a table with name $qualifiedTableName.")
+      spark.sql(s"DROP TABLE IF EXISTS $qualifiedTableName")
       spark.catalog.createExternalTable(qualifiedTableName, parquetPath, source = "parquet")
       logger.info(s"Successfully mounted $outputKey as a table with name $qualifiedTableName.")
     }
