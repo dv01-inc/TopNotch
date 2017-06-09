@@ -298,7 +298,8 @@ class TnEngine(spark: SparkSession) extends StrictLogging {
     import TnCmdStrings._
 
     // a running list of the output keys used so far
-    val definedOutputKeys: MSet[String] = MSet.empty
+    val definedOutputKeys: MSet[String] = MSet(dataframeLookupTable.keys.toSeq: _*)
+
     val fs = FileSystem.get(spark.sparkContext.hadoopConfiguration)
     /**
       * Determine if all inputs to each command are valid: either having been previously defined in this run or can be
