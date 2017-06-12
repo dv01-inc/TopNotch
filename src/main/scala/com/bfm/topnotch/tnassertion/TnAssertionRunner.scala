@@ -30,7 +30,7 @@ class TnAssertionRunner(writer: TnWriter) extends StrictLogging {
     */
   def runAssertions(input: DataFrame, reportKey: String, assertions: Seq[TnAssertionParams]): AssertionReturn = {
     val totalCount = input.count
-    val assertionReports = assertions.map(checkAssertion(_, input, totalCount))
+    val assertionReports = assertions.filter(a => a.priority == "H").map(checkAssertion(_, input, totalCount))
     writer.writeReport(reportKey, assertionReports.toJson.prettyPrint)
     logger.info(s"$reportKey has value \n${assertionReports.toJson.prettyPrint}")
     AssertionReturn(identifyInvalidRows(input, assertions),

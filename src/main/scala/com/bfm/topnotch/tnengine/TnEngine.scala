@@ -245,8 +245,11 @@ class TnEngine(spark: SparkSession) extends StrictLogging {
       cmd match {
         case assertionCmd: TnAssertionCmd => {
           logger.info(s"Executing assertion: \n ${writePretty(assertionCmd)}")
+          val allAssertions = assertionCmd.params.assertions
+          val filteredAssertions = if (!assertionCmd.highPriority) allAssertions else allAssertions.filter(_.priority == "H")
+
           val out = assertionRunner.runAssertions(getInputDF(assertionCmd.input),
-            assertionCmd.outputKey, assertionCmd.params.assertions)
+            assertionCmd.outputKey, filteredAssertions)
           storeOutputDF(out.df, cmd)
           out.numFailed
         }

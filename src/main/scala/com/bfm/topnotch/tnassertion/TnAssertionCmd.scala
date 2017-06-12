@@ -12,6 +12,7 @@ case class TnAssertionCmd (
                             params: AssertionSeq,
                             input: Input,
                             outputKey: String,
+                            highPriority: Boolean = false,
                             cache: Option[Boolean] = None,
                             outputPath: Option[String] = None,
                             tableName: Option[String] = None,
@@ -42,6 +43,7 @@ case class TnAssertionParams(
                               query: String,
                               description: String,
                               threshold: Double,
+                              priority: String,
                               userDefinedSummaryExpr: Option[Map[String, String]] = None,
                               userDefinedFeatures: Option[Map[String, String]] = None,
                               sampleWindowParams: Option[TnSampleWindowParams] = None
