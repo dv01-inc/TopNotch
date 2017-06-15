@@ -12,7 +12,7 @@ case class TnAssertionCmd (
                             params: AssertionSeq,
                             input: Input,
                             outputKey: String,
-                            highPriority: Boolean = false,
+                            highPriority: String = "false",
                             cache: Option[Boolean] = None,
                             outputPath: Option[String] = None,
                             tableName: Option[String] = None,
