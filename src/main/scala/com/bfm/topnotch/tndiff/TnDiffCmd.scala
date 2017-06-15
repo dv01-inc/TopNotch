@@ -27,7 +27,8 @@ case class TnDiffCmd (
                            cache: Option[Boolean] = None,
                            threshold: Option[Double] = None,
                            outputPath: Option[String] = None,
-                           tableName: Option[String] = None
+                           tableName: Option[String] = None,
+                           dbName: Option[String] = None
                            ) extends TnCmd {
   val numericThreshold = threshold.getOrElse(TnDiffCmd.DEFAULT_THRESHOLD)
 }

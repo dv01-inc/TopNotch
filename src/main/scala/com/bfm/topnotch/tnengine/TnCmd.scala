@@ -15,6 +15,9 @@ abstract class TnCmd {
   /** If writing the output in hdfs, the name of the table to mount, otherwise none. Note: this will be ignored if
     * outputPath is not specified. */
   val tableName: Option[String]
+  /** If writing the output in hdfs, and a tableName is set, the name of the database in which to mount
+    * said table.  NOTE:  This is ignored unless both tableName and outputPath are set */
+  val dbName: Option[String]
 }
 
 /**
@@ -48,6 +51,7 @@ object TnCmdStrings {
  * @param outputKey This is meaningless in this class. This exists only so that TnErrorCmd can extend TnCmd.
  * @param writeToDisk This is meaningless in this class. This exists only so that TnErrorCmd can extend TnCmd.
  * @param outputPath This is meaningless in this class. This exists only so that TnErrorCmd can extend TnCmd.
+ * @param dbName This is meaningless in this class. This exists only so that TnErrorCmd can extend TnCmd.
  */
 case class TnErrorCmd (
                             cmdString: String,
@@ -57,7 +61,8 @@ case class TnErrorCmd (
                             cache: Option[Boolean] = None,
                             writeToDisk: Boolean = false,
                             outputPath: Option[String] = None,
-                            tableName: Option[String] = None
+                            tableName: Option[String] = None,
+                            dbName: Option[String] = None
                             ) extends TnCmd {
   override def toString: String = {
     s"There was an error with the command in position ${cmdIdx}. The command was: \n ${cmdString} \n The message was: ${errorStr} \n\n"
