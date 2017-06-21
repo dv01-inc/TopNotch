@@ -29,12 +29,13 @@ class TnAssertionRunner(writer: TnWriter) extends StrictLogging {
     *         assertion, the reasons why each row is invalid, and an int of how many assertions failed past threshold.
     */
   def runAssertions(input: DataFrame, reportKey: String, assertions: Seq[TnAssertionParams]): AssertionReturn = {
-    val totalCount = input.count
-    val assertionReports = assertions.filter(a => a.priority == "H").map(checkAssertion(_, input, totalCount))
-    writer.writeReport(reportKey, assertionReports.toJson.prettyPrint)
-    logger.info(s"$reportKey has value \n${assertionReports.toJson.prettyPrint}")
-    AssertionReturn(identifyInvalidRows(input, assertions),
-      assertionReports.filter(report => report.fractionInvalid > report.threshold).length)
+    // val totalCount = input.count
+    // val assertionReports = assertions.map(checkAssertion(_, input, totalCount))
+    // writer.writeReport(reportKey, assertionReports.toJson.prettyPrint)
+    // logger.info(s"$reportKey has value \n${assertionReports.toJson.prettyPrint}")
+    AssertionReturn(identifyInvalidRows(input, assertions), 1)
+    // AssertionReturn(identifyInvalidRows(input, assertions),
+    //   assertionReports.filter(report => report.fractionInvalid > report.threshold).length)
   }
 
   /**
