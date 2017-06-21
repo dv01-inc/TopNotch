@@ -250,12 +250,6 @@ class TnEngine(spark: SparkSession) extends StrictLogging {
 
           val out = assertionRunner.runAssertions(getInputDF(assertionCmd.input),
             assertionCmd.outputKey, filteredAssertions)
-          println("!!!!       assertions.  !!!!!!!")
-          println("!!!!       assertions.  !!!!!!!")
-          println("!!!!       assertions.  !!!!!!!")
-          println("!!!!       assertions.  !!!!!!!")
-          println(s"highPriority is " + assertionCmd.highPriority.toString)
-          filteredAssertions foreach println
           storeOutputDF(out.df, cmd)
           out.numFailed
         }
